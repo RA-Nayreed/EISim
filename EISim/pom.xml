@@ -9,9 +9,9 @@
   <version>1.0.0</version>
 
   <name>EISim</name>
-  <url>https://github.com/hennas/IESim</url>
-  <description>A simulator for intelligent edge orhestration methods</description>
-  
+  <url>https://github.com/hennas/EISim</url>
+  <description>A simulator for intelligent edge orchestration methods</description>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.release>17</maven.compiler.release>
