@@ -18,8 +18,8 @@
     <log4j2.version>2.17.2</log4j2.version>
     <dl4j-master.version>1.0.0-M2.1</dl4j-master.version>
     <!-- Change the nd4j.backend property to nd4j-cuda-X-platform to use CUDA GPUs -->
-    <!-- <nd4j.backend>nd4j-cuda-11.6-platform</nd4j.backend> -->
-    <nd4j.backend>nd4j-native-platform</nd4j.backend>
+    <nd4j.backend>nd4j-cuda-11.6-platform</nd4j.backend>
+    <!-- <nd4j.backend>nd4j-native-platform</nd4j.backend> -->
     <skipTests>true</skipTests>
   </properties>
 
@@ -95,7 +95,7 @@
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
-          <version>3.8.0</version>
+          <version>3.11.0</version>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
