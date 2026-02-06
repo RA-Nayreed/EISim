@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+LOGS_DIR="${SCRIPT_DIR}/Logs"
+mkdir -p "${LOGS_DIR}"
+TIMESTAMP="$(date +"%Y%m%d_%H%M%S")"
+SCRIPT_NAME="$(basename "${BASH_SOURCE[0]}" .bash)"
+LOG_FILE="${LOGS_DIR}/${SCRIPT_NAME}_${TIMESTAMP}.log"
+exec > >(tee -a "${LOG_FILE}") 2>&1
+
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
@@ -10,4 +18,5 @@ for seed in {1001..1005}
 do 
     echo -e "${YELLOW}EVALUATION round with seed: $seed${NC}"
     mvn -q exec:java -Dexec.mainClass="com.github.hennas.eisim.Main" -Dexec.args="-i EISim_settings/settings_D_100servers/ -o EISim_output/D_100results/output_D_100servers_evaluation/ -m EISim_output/D_100results/models_D_100servers/ -s $seed"
+
 done
