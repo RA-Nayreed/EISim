@@ -1,7 +1,8 @@
 target/
 test/
 EISim_output/
-
+.eisim/
+Logs/
 # Eclipse project files
 .classpath
 .project
@@ -11,6 +12,6 @@ bin/
 # Pickle and JSON files
 *.pickle
 *.json
-
+*.log
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints
