@@ -1,0 +1,78 @@
+{
+    "server_specs_20": {
+        "A": {
+            "cores": 20,
+            "mips": 25000,
+            "ram": 120000,
+            "storage": 2000000,
+            "idleConsumption": 125,
+            "maxConsumption": 220,
+            "count": 6
+        },
+        "B": {
+            "cores": 15,
+            "mips": 20000,
+            "ram": 80000,
+            "storage": 1280000,
+            "idleConsumption": 105,
+            "maxConsumption": 185,
+            "count": 8
+        },
+        "C": {
+            "cores": 10,
+            "mips": 15000,
+            "ram": 50000,
+            "storage": 800000,
+            "idleConsumption": 85,
+            "maxConsumption": 150,
+            "count": 6
+        }
+    },
+    "server_specs_100": {
+        "A": {
+            "cores": 8,
+            "mips": 12000,
+            "ram": 24000,
+            "storage": 400000,
+            "idleConsumption": 55,
+            "maxConsumption": 115,
+            "count": 20
+        },
+        "B": {
+            "cores": 6,
+            "mips": 10000,
+            "ram": 16000,
+            "storage": 256000,
+            "idleConsumption": 45,
+            "maxConsumption": 95,
+            "count": 50
+        },
+        "C": {
+            "cores": 4,
+            "mips": 8000,
+            "ram": 10000,
+            "storage": 160000,
+            "idleConsumption": 35,
+            "maxConsumption": 75,
+            "count": 30
+        }
+    },
+    "homogeneous_specs": {
+        "20": {
+            "cores": 15,
+            "mips": 20000,
+            "ram": 80000,
+            "storage": 1280000,
+            "idleConsumption": 105,
+            "maxConsumption": 185
+        },
+        "100": {
+            "cores": 6,
+            "mips": 10000,
+            "ram": 16000,
+            "storage": 256000,
+            "idleConsumption": 45,
+            "maxConsumption": 95
+        }
+    }
+}
