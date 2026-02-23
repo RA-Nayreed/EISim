@@ -34,7 +34,7 @@ import com.github.hennas.eisim.core.taskgenerator.Task;
 
 /**
  * The {@code SimulationManager} class represents the default implementation of
- * the simulation manager. It schedules the offlaoding of tasks, links the
+ * the simulation manager. It schedules the offloading of tasks, links the
  * different modules and manages the simulation.
  * <p>
  * When the {@link SimulationThread#startSimulation()} method is called, it
