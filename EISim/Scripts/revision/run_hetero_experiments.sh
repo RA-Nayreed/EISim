@@ -22,22 +22,60 @@ echo -e "${GREEN}       EISim Training and Evaluation Script${NC}"
 echo -e "${GREEN}============================================================${NC}"
 echo ""
 
-echo -e "${CYAN}Select server configuration:${NC}"
-echo "  1) homo   - Homogeneous servers"
-echo "  2) hetero - Heterogeneous servers"
-read -p "Enter choice (homo/hetero): " CONFIG_TYPE
+# Initialize variables
+CONFIG_TYPE=""
+TOPOLOGY=""
+SERVERS=""
+TRAIN_ROUNDS=""
+EVAL_ROUNDS=""
+ACTION=""
+
+# Parse flags
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        -c|--config) CONFIG_TYPE="$2"; shift ;;
+        -t|--topology) TOPOLOGY="$2"; shift ;;
+        -s|--servers) SERVERS="$2"; shift ;;
+        -r|--train-rounds) TRAIN_ROUNDS="$2"; shift ;;
+        -e|--eval-rounds) EVAL_ROUNDS="$2"; shift ;;
+        -a|--action) ACTION="$2"; shift ;;
+        -h|--help)
+            echo -e "${GREEN}Usage: $0 [options]${NC}"
+            echo "Options:"
+            echo "  -c, --config <homo|hetero>      Server configuration"
+            echo "  -t, --topology <C|H|D>          Topology"
+            echo "  -s, --servers <20|100>          Server count"
+            echo "  -r, --train-rounds <count>      Number of training rounds"
+            echo "  -e, --eval-rounds <count>       Number of evaluation rounds"
+            echo "  -a, --action <train|eval|both>  Action to perform"
+            echo "  -h, --help                      Show this help message"
+            exit 0
+            ;;
+        *) echo -e "${RED}Unknown parameter passed: $1${NC}"; exit 1 ;;
+    esac
+    shift
+done
+
+if [ -z "$CONFIG_TYPE" ]; then
+    echo -e "${CYAN}Select server configuration:${NC}"
+    echo "  1) homo   - Homogeneous servers"
+    echo "  2) hetero - Heterogeneous servers"
+    read -p "Enter choice (homo/hetero): " CONFIG_TYPE
+fi
 
 if [[ "$CONFIG_TYPE" != "homo" && "$CONFIG_TYPE" != "hetero" ]]; then
     echo -e "${RED}Invalid choice. Use 'homo' or 'hetero'${NC}"
     exit 1
 fi
 
-echo ""
-echo -e "${CYAN}Select topology:${NC}"
-echo "  C - Centralized"
-echo "  H - Hybrid"
-echo "  D - Decentralized"
-read -p "Enter choice (C/H/D): " TOPOLOGY
+if [ -z "$TOPOLOGY" ]; then
+    echo ""
+    echo -e "${CYAN}Select topology:${NC}"
+    echo "  C - Centralized"
+    echo "  H - Hybrid"
+    echo "  D - Decentralized"
+    read -p "Enter choice (C/H/D): " TOPOLOGY
+fi
 
 TOPOLOGY=$(echo "$TOPOLOGY" | tr '[:lower:]' '[:upper:]')
 if [[ "$TOPOLOGY" != "C" && "$TOPOLOGY" != "H" && "$TOPOLOGY" != "D" ]]; then
@@ -45,22 +83,28 @@ if [[ "$TOPOLOGY" != "C" && "$TOPOLOGY" != "H" && "$TOPOLOGY" != "D" ]]; then
     exit 1
 fi
 
-echo ""
-echo -e "${CYAN}Select server count:${NC}"
-echo "  20  - 20 edge servers"
-echo "  100 - 100 edge servers"
-read -p "Enter choice (20/100): " SERVERS
+if [ -z "$SERVERS" ]; then
+    echo ""
+    echo -e "${CYAN}Select server count:${NC}"
+    echo "  20  - 20 edge servers"
+    echo "  100 - 100 edge servers"
+    read -p "Enter choice (20/100): " SERVERS
+fi
 
 if [[ "$SERVERS" != "20" && "$SERVERS" != "100" ]]; then
     echo -e "${RED}Invalid choice. Use '20' or '100'${NC}"
     exit 1
 fi
 
-echo ""
-read -p "Enter number of training rounds (default: 100): " TRAIN_ROUNDS
+if [ -z "$TRAIN_ROUNDS" ]; then
+    echo ""
+    read -p "Enter number of training rounds (default: 100): " TRAIN_ROUNDS
+fi
 TRAIN_ROUNDS=${TRAIN_ROUNDS:-100}
 
-read -p "Enter number of evaluation rounds (default: 5): " EVAL_ROUNDS
+if [ -z "$EVAL_ROUNDS" ]; then
+    read -p "Enter number of evaluation rounds (default: 5): " EVAL_ROUNDS
+fi
 EVAL_ROUNDS=${EVAL_ROUNDS:-5}
 
 if [[ "$CONFIG_TYPE" == "hetero" ]]; then
@@ -68,11 +112,13 @@ if [[ "$CONFIG_TYPE" == "hetero" ]]; then
     OUTPUT_TRAIN_DIR="EISim_output/revision/output_${TOPOLOGY}_${SERVERS}servers_hetero_train"
     OUTPUT_EVAL_DIR="EISim_output/revision/output_${TOPOLOGY}_${SERVERS}servers_hetero"
     MODEL_DIR="EISim_output/revision/models_${TOPOLOGY}_${SERVERS}servers_hetero"
+    HETERO_FLAG="-H"
 else
     SETTINGS_DIR="EISim_settings/revision/settings_${TOPOLOGY}_${SERVERS}servers"
     OUTPUT_TRAIN_DIR="EISim_output/revision/output_${TOPOLOGY}_${SERVERS}servers_homo_train"
     OUTPUT_EVAL_DIR="EISim_output/revision/output_${TOPOLOGY}_${SERVERS}servers_homo"
     MODEL_DIR="EISim_output/revision/models_${TOPOLOGY}_${SERVERS}servers_homo"
+    HETERO_FLAG=""
 fi
 
 TOPO_NAME=""
@@ -105,12 +151,14 @@ if [ ! -d "$SETTINGS_DIR" ]; then
     exit 1
 fi
 
-echo ""
-echo -e "${CYAN}Select action:${NC}"
-echo "  1) train - Train model only"
-echo "  2) eval  - Evaluate model only"
-echo "  3) both  - Train then evaluate"
-read -p "Enter choice (train/eval/both): " ACTION
+if [ -z "$ACTION" ]; then
+    echo ""
+    echo -e "${CYAN}Select action:${NC}"
+    echo "  1) train - Train model only"
+    echo "  2) eval  - Evaluate model only"
+    echo "  3) both  - Train then evaluate"
+    read -p "Enter choice (train/eval/both): " ACTION
+fi
 
 if [[ "$ACTION" != "train" && "$ACTION" != "eval" && "$ACTION" != "both" ]]; then
     echo -e "${RED}Invalid choice. Use 'train', 'eval', or 'both'${NC}"
@@ -150,7 +198,7 @@ if [[ "$ACTION" == "train" || "$ACTION" == "both" ]]; then
         echo -e "${YELLOW}[${PROGRESS}%] Training round ${seed}/${TRAIN_ROUNDS} (seed: ${seed}, R: ${R_STEPS}) | ETA: ${ETA_STR}${NC}"
 
         mvn -q exec:java -Dexec.mainClass="com.github.hennas.eisim.Main" \
-            -Dexec.args="-i ${SETTINGS_DIR}/ -o ${OUTPUT_TRAIN_DIR}/ -m ${MODEL_DIR}/ -T -R ${R_STEPS} -s ${seed}"
+            -Dexec.args="-i ${SETTINGS_DIR}/ -o ${OUTPUT_TRAIN_DIR}/ -m ${MODEL_DIR}/ -T -R ${R_STEPS} -s ${seed} ${HETERO_FLAG}"
     done
 
     TOTAL_TIME=$(($(date +%s) - START_TIME))
@@ -178,7 +226,7 @@ if [[ "$ACTION" == "eval" || "$ACTION" == "both" ]]; then
         echo -e "${YELLOW}Evaluation round ${i}/${EVAL_ROUNDS} (seed: ${seed})${NC}"
 
         mvn -q exec:java -Dexec.mainClass="com.github.hennas.eisim.Main" \
-            -Dexec.args="-i ${SETTINGS_DIR}/ -o ${OUTPUT_EVAL_DIR}/ -m ${MODEL_DIR}/ -s ${seed}"
+            -Dexec.args="-i ${SETTINGS_DIR}/ -o ${OUTPUT_EVAL_DIR}/ -m ${MODEL_DIR}/ -s ${seed} ${HETERO_FLAG}"
     done
 
     TOTAL_TIME=$(($(date +%s) - START_TIME))
