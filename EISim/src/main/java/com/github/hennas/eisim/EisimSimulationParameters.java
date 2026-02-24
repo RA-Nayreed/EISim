@@ -37,6 +37,18 @@ public class EisimSimulationParameters {
 	public static String modelFolder;
 	
 	/**
+	 * Path to the centralized simulation_parameters.properties file.
+	 * If specified, the simulation overrides the default setting behavior.
+	 */
+	public static String basePropertiesFile;
+
+	/**
+	 * The orchestration algorithm topology character (C, H, or D) passed to
+	 * override simulation_parameters.properties.
+	 */
+	public static String topology;
+
+	/**
 	 * Whether the seed generator should be seeded or not.
 	 * 
 	 * @see EisimSimulationManager#seedGenerator

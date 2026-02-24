@@ -198,7 +198,13 @@ if [[ "$ACTION" == "train" || "$ACTION" == "both" ]]; then
         echo -e "${YELLOW}[${PROGRESS}%] Training round ${seed}/${TRAIN_ROUNDS} (seed: ${seed}, R: ${R_STEPS}) | ETA: ${ETA_STR}${NC}"
 
         mvn -q exec:java -Dexec.mainClass="com.github.hennas.eisim.Main" \
+<<<<<<< Updated upstream
             -Dexec.args="-i ${SETTINGS_DIR}/ -o ${OUTPUT_TRAIN_DIR}/ -m ${MODEL_DIR}/ -T -R ${R_STEPS} -s ${seed} ${HETERO_FLAG}"
+=======
+            -Dexec.args="-i ${SETTINGS_DIR}/ -o ${OUTPUT_TRAIN_DIR}/ -m ${MODEL_DIR}/ -P EISim_settings/base_simulation_parameters.properties -topo ${TOPOLOGY} -T -R ${R_STEPS} -s ${seed} ${HETERO_FLAG}"
+        
+        echo "$seed" >> "$TRAIN_CHECKPOINT"
+>>>>>>> Stashed changes
     done
 
     TOTAL_TIME=$(($(date +%s) - START_TIME))
@@ -226,7 +232,13 @@ if [[ "$ACTION" == "eval" || "$ACTION" == "both" ]]; then
         echo -e "${YELLOW}Evaluation round ${i}/${EVAL_ROUNDS} (seed: ${seed})${NC}"
 
         mvn -q exec:java -Dexec.mainClass="com.github.hennas.eisim.Main" \
+<<<<<<< Updated upstream
             -Dexec.args="-i ${SETTINGS_DIR}/ -o ${OUTPUT_EVAL_DIR}/ -m ${MODEL_DIR}/ -s ${seed} ${HETERO_FLAG}"
+=======
+            -Dexec.args="-i ${SETTINGS_DIR}/ -o ${OUTPUT_EVAL_DIR}/ -m ${MODEL_DIR}/ -P EISim_settings/base_simulation_parameters.properties -topo ${TOPOLOGY} -s ${seed} ${HETERO_FLAG}"
+            
+        echo "$seed" >> "$EVAL_CHECKPOINT"
+>>>>>>> Stashed changes
     done
 
     TOTAL_TIME=$(($(date +%s) - START_TIME))

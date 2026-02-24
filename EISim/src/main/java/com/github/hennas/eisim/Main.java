@@ -3,6 +3,12 @@ package com.github.hennas.eisim;
 import org.nd4j.linalg.factory.Nd4j;
 
 import com.github.hennas.eisim.core.simulationmanager.Simulation;
+<<<<<<< Updated upstream
+=======
+import com.github.hennas.eisim.core.simulationmanager.SimulationAbstract;
+import com.github.hennas.eisim.defaultclasses.EisimComputingNode;
+import com.github.hennas.eisim.defaultclasses.StackelbergComputingNode;
+>>>>>>> Stashed changes
 import com.github.hennas.eisim.helpers.ArgumentParser;
 
 /**
@@ -71,6 +77,7 @@ public class Main {
 		
 		sim.setCustomSettingsFolder(EisimSimulationParameters.settingFolder);
 		sim.setCustomOutputFolder(EisimSimulationParameters.outputFolder);
+<<<<<<< Updated upstream
 		
 		// You can set custom implementation classes here
 		
@@ -102,6 +109,33 @@ public class Main {
 		// and a custom pricing agent implementation can be set by modifying or extending 
 		// EisimComputingNode class
 		
+=======
+
+		// Override the properties file generically
+		if (EisimSimulationParameters.basePropertiesFile != null) {
+			sim.setCustomFilePath(EisimSimulationParameters.basePropertiesFile,
+					SimulationAbstract.Files.SIMULATION_PARAMETERS);
+			System.out
+					.println("Using centralized base properties file: " + EisimSimulationParameters.basePropertiesFile);
+		}
+
+		// If Stackelberg mode is enabled, use StackelbergComputingNode
+		if (EisimSimulationParameters.useStackelberg) {
+			StackelbergComputingNode.setHeterogeneousConfig(EisimSimulationParameters.heterogeneousConfig);
+			sim.setCustomComputingNode(StackelbergComputingNode.class);
+			System.out.println("Custom computing node set: StackelbergComputingNode");
+		} else {
+			// For DDPG path, wire heterogeneous config to EisimComputingNode
+			EisimComputingNode.setHeterogeneousConfig(EisimSimulationParameters.heterogeneousConfig);
+		}
+
+		if (EisimSimulationParameters.heterogeneousConfig) {
+			System.out.println("Server configuration: HETEROGENEOUS (state space dim = 3)");
+		} else {
+			System.out.println("Server configuration: HOMOGENEOUS (state space dim = 2)");
+		}
+
+>>>>>>> Stashed changes
 		// Finally, launch the simulation
 		sim.launchSimulation();
 	}
