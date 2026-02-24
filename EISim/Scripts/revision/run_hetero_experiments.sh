@@ -176,36 +176,44 @@ if [[ "$ACTION" == "train" || "$ACTION" == "both" ]]; then
     echo -e "${GREEN}============================================================${NC}"
 
     START_TIME=$(date +%s)
-
-    for seed in $(seq 1 $TRAIN_ROUNDS); do
-        if [ $seed -eq 1 ]; then
-            R_STEPS=500
-        else
-            R_STEPS=1
+    
+    TRAIN_CHECKPOINT="${MODEL_DIR}/train_checkpoint.txt"
+    START_SEED=1
+    if [ -f "$TRAIN_CHECKPOINT" ]; then
+        LAST_SEED=$(cat "$TRAIN_CHECKPOINT" | tail -n 1)
+        if [ -n "$LAST_SEED" ]; then
+            START_SEED=$((LAST_SEED + 1))
+            echo -e "${YELLOW}Resuming training from seed ${START_SEED}...${NC}"
         fi
+    fi
 
-        PROGRESS=$((seed * 100 / TRAIN_ROUNDS))
-        ELAPSED=$(($(date +%s) - START_TIME))
-        if [ $seed -gt 1 ]; then
-            ETA=$(( (ELAPSED * TRAIN_ROUNDS / (seed - 1)) - ELAPSED ))
-            ETA_MIN=$((ETA / 60))
-            ETA_SEC=$((ETA % 60))
-            ETA_STR="${ETA_MIN}m ${ETA_SEC}s"
-        else
-            ETA_STR="calculating..."
-        fi
+    if [ "$START_SEED" -le "$TRAIN_ROUNDS" ]; then
+        for seed in $(seq $START_SEED $TRAIN_ROUNDS); do
+            if [ $seed -eq 1 ]; then
+                R_STEPS=500
+            else
+                R_STEPS=1
+            fi
 
-        echo -e "${YELLOW}[${PROGRESS}%] Training round ${seed}/${TRAIN_ROUNDS} (seed: ${seed}, R: ${R_STEPS}) | ETA: ${ETA_STR}${NC}"
+            PROGRESS=$((seed * 100 / TRAIN_ROUNDS))
+            ELAPSED=$(($(date +%s) - START_TIME))
+            if [ $seed -gt 1 ]; then
+                ETA=$(( (ELAPSED * TRAIN_ROUNDS / (seed - 1)) - ELAPSED ))
+                ETA_MIN=$((ETA / 60))
+                ETA_SEC=$((ETA % 60))
+                ETA_STR="${ETA_MIN}m ${ETA_SEC}s"
+            else
+                ETA_STR="calculating..."
+            fi
 
-        mvn -q exec:java -Dexec.mainClass="com.github.hennas.eisim.Main" \
-<<<<<<< Updated upstream
-            -Dexec.args="-i ${SETTINGS_DIR}/ -o ${OUTPUT_TRAIN_DIR}/ -m ${MODEL_DIR}/ -T -R ${R_STEPS} -s ${seed} ${HETERO_FLAG}"
-=======
-            -Dexec.args="-i ${SETTINGS_DIR}/ -o ${OUTPUT_TRAIN_DIR}/ -m ${MODEL_DIR}/ -P EISim_settings/base_simulation_parameters.properties -topo ${TOPOLOGY} -T -R ${R_STEPS} -s ${seed} ${HETERO_FLAG}"
-        
-        echo "$seed" >> "$TRAIN_CHECKPOINT"
->>>>>>> Stashed changes
-    done
+            echo -e "${YELLOW}[${PROGRESS}%] Training round ${seed}/${TRAIN_ROUNDS} (seed: ${seed}, R: ${R_STEPS}) | ETA: ${ETA_STR}${NC}"
+
+            mvn -q exec:java -Dexec.mainClass="com.github.hennas.eisim.Main" \
+                -Dexec.args="-i ${SETTINGS_DIR}/ -o ${OUTPUT_TRAIN_DIR}/ -m ${MODEL_DIR}/ -P EISim_settings/base_simulation_parameters.properties -topo ${TOPOLOGY} -T -R ${R_STEPS} -s ${seed} ${HETERO_FLAG}"
+            
+            echo "$seed" >> "$TRAIN_CHECKPOINT"
+        done
+    fi
 
     TOTAL_TIME=$(($(date +%s) - START_TIME))
     echo -e "${GREEN}Training completed in $((TOTAL_TIME / 60))m $((TOTAL_TIME % 60))s${NC}"
@@ -226,20 +234,30 @@ if [[ "$ACTION" == "eval" || "$ACTION" == "both" ]]; then
 
     START_TIME=$(date +%s)
     EVAL_START_SEED=101
+    EVAL_TARGET_MAX=$((EVAL_START_SEED + EVAL_ROUNDS - 1))
 
-    for i in $(seq 1 $EVAL_ROUNDS); do
-        seed=$((EVAL_START_SEED + i - 1))
-        echo -e "${YELLOW}Evaluation round ${i}/${EVAL_ROUNDS} (seed: ${seed})${NC}"
+    EVAL_CHECKPOINT="${MODEL_DIR}/eval_checkpoint.txt"
+    CURRENT_START=$EVAL_START_SEED
+    if [ -f "$EVAL_CHECKPOINT" ]; then
+        LAST_EVAL_SEED=$(cat "$EVAL_CHECKPOINT" | tail -n 1)
+        if [ -n "$LAST_EVAL_SEED" ]; then
+            CURRENT_START=$((LAST_EVAL_SEED + 1))
+            echo -e "${YELLOW}Resuming evaluation from seed ${CURRENT_START}...${NC}"
+        fi
+    fi
 
-        mvn -q exec:java -Dexec.mainClass="com.github.hennas.eisim.Main" \
-<<<<<<< Updated upstream
-            -Dexec.args="-i ${SETTINGS_DIR}/ -o ${OUTPUT_EVAL_DIR}/ -m ${MODEL_DIR}/ -s ${seed} ${HETERO_FLAG}"
-=======
-            -Dexec.args="-i ${SETTINGS_DIR}/ -o ${OUTPUT_EVAL_DIR}/ -m ${MODEL_DIR}/ -P EISim_settings/base_simulation_parameters.properties -topo ${TOPOLOGY} -s ${seed} ${HETERO_FLAG}"
-            
-        echo "$seed" >> "$EVAL_CHECKPOINT"
->>>>>>> Stashed changes
-    done
+    if [ "$CURRENT_START" -le "$EVAL_TARGET_MAX" ]; then
+        for seed in $(seq $CURRENT_START $EVAL_TARGET_MAX); do
+            # Calculate the current evaluation index 1 to N
+            i=$((seed - EVAL_START_SEED + 1))
+            echo -e "${YELLOW}Evaluation round ${i}/${EVAL_ROUNDS} (seed: ${seed})${NC}"
+
+            mvn -q exec:java -Dexec.mainClass="com.github.hennas.eisim.Main" \
+                -Dexec.args="-i ${SETTINGS_DIR}/ -o ${OUTPUT_EVAL_DIR}/ -m ${MODEL_DIR}/ -P EISim_settings/base_simulation_parameters.properties -topo ${TOPOLOGY} -s ${seed} ${HETERO_FLAG}"
+                
+            echo "$seed" >> "$EVAL_CHECKPOINT"
+        done
+    fi
 
     TOTAL_TIME=$(($(date +%s) - START_TIME))
     echo -e "${GREEN}Evaluation completed in $((TOTAL_TIME / 60))m $((TOTAL_TIME % 60))s${NC}"
