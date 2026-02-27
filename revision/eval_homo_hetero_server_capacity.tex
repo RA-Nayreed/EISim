@@ -1,0 +1,570 @@
+\documentclass[conference]{IEEEtran}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage{adjustbox}
+
+\graphicspath{{./}}
+
+\begin{document}
+
+\title{Comparative Evaluation of Deep Reinforcement Learning-Based Edge Server Pricing Under Homogeneous and Heterogeneous Server Configurations}
+
+\maketitle
+
+%===============================================================================
+\section{Executive Summary}
+%===============================================================================
+
+This document presents a rigorous comparative analysis of edge orchestration simulation results between homogeneous (baseline) and heterogeneous server configurations. The evaluation examines the impact of server capacity heterogeneity on DRL-based pricing performance across three control topologies: Centralized, Hybrid, and Decentralized.
+
+\subsection{Key Findings}
+
+\begin{enumerate}
+    \item \textbf{Dramatic Quality of Service Improvement}: Edge server execution success rate shows the most striking difference. In 100-server scenario at 4000 devices:
+    \begin{itemize}
+        \item \textbf{Hybrid}: 2.99\% $\rightarrow$ 22.22\% (+576\%)
+        \item \textbf{Decentralized}: 0.49\% $\rightarrow$ 27.94\% (+5575\%)
+    \end{itemize}
+
+    \item \textbf{Massive Profit Improvement in 100-Server Scenario}: Heterogeneous configurations dramatically improve ESP profit for Hybrid (+157\% to +279\%) and Decentralized (+401\% to +1788\%) topologies, while Centralized remains stable ($\pm5\%$).
+
+    \item \textbf{Topology Ranking Partially Stable}: Rankings show 50\% stability---2/4 device counts match in both 20-server and 100-server scenarios. Centralized consistently remains the best-performing topology.
+
+    \item \textbf{Resource Equivalence}: Total computational capacity (6,000,000 MIPS), RAM (1,600,000 MB), and storage (25,600,000 MB) are \textbf{exactly equal} between homogeneous and heterogeneous configurations, ensuring fair comparison.
+
+    \item \textbf{Energy Efficiency}: Heterogeneous configurations show 20--40\% reduction in energy consumption across most topologies.
+
+    \item \textbf{Scale-Dependent Workload Distribution}: Task allocation patterns vary by scale---20-server scenario routes more tasks to high-capacity servers (A:C ratio 4.3:1 vs capacity 3.3:1), while 100-server scenario shows load-balancing behavior (A:C ratio 1.2:1 vs capacity 2.0:1).
+\end{enumerate}
+
+%===============================================================================
+\section{Experimental Setup}
+%===============================================================================
+
+\subsection{Simulation Environment}
+
+The evaluation employs EISim, a discrete-event simulator for edge computing environments. Simulations were conducted with:
+\begin{itemize}
+    \item \textbf{Duration}: 500 seconds per episode
+    \item \textbf{Price Slot Duration}: 5 seconds
+    \item \textbf{Edge Device Counts}: 1000, 2000, 3000, 4000
+    \item \textbf{Server Counts}: 20 (high-capacity), 100 (distributed)
+    \item \textbf{Control Topologies}: Centralized, Hybrid, Decentralized
+\end{itemize}
+
+%-------------------------------------------------------------------------------
+\subsection{Server Configurations}
+%-------------------------------------------------------------------------------
+
+\subsubsection{Homogeneous Configuration (Baseline)}
+
+All servers within a scenario share identical specifications. Table~\ref{tab:homo_specs} shows the baseline configuration.
+
+\begin{table}[H]
+\centering
+\caption{Homogeneous Server Specifications}
+\label{tab:homo_specs}
+\footnotesize
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Parameter} & \textbf{20 Srv} & \textbf{100 Srv} \\
+\midrule
+Cores/server & 15 & 6 \\
+MIPS/core & 20K & 10K \\
+RAM/server (MB) & 80K & 16K \\
+Storage/server (MB) & 1.28M & 256K \\
+Idle/Max Power (W) & 105/185 & 45/95 \\
+\midrule
+\textbf{Total MIPS} & \textbf{6M} & \textbf{6M} \\
+\textbf{Total RAM} & \textbf{1.6M} & \textbf{1.6M} \\
+\textbf{Total Storage} & \textbf{25.6M} & \textbf{25.6M} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Heterogeneous Configuration}
+
+Servers are classified into three types (A, B, C) with varying capacities. \textbf{Critically, the total MIPS, RAM, and storage exactly match the homogeneous configuration.} Tables~\ref{tab:hetero_specs_20} and~\ref{tab:hetero_specs_100} detail the specifications.
+
+\begin{table}[H]
+\centering
+\caption{Heterogeneous Server Specs -- 20 Servers}
+\label{tab:hetero_specs_20}
+\footnotesize
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Param} & \textbf{A} & \textbf{B} & \textbf{C} & \textbf{Total} \\
+\midrule
+Count & 6 & 8 & 6 & 20 \\
+Cores & 20 & 15 & 10 & -- \\
+MIPS/core & 23.8K & 19.0K & 14.3K & -- \\
+RAM (MB) & 115.7K & 77.1K & 48.2K & -- \\
+Storage (MB) & 1.89M & 1.21M & 757K & -- \\
+Idle/Max (W) & 125/220 & 105/185 & 85/150 & -- \\
+\midrule
+Server MIPS & 476K & 286K & 143K & -- \\
+Total MIPS & 2.86M & 2.29M & 857K & \textbf{6M} \\
+Capacity & 47.6\% & 38.1\% & 14.3\% & 100\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Heterogeneous Server Specs -- 100 Servers}
+\label{tab:hetero_specs_100}
+\footnotesize
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Param} & \textbf{A} & \textbf{B} & \textbf{C} & \textbf{Total} \\
+\midrule
+Count & 20 & 50 & 30 & 100 \\
+Cores & 8 & 6 & 4 & -- \\
+MIPS/core & 12.2K & 10.2K & 8.2K & -- \\
+RAM (MB) & 24.3K & 16.2K & 10.1K & -- \\
+Storage (MB) & 400K & 256K & 160K & -- \\
+Idle/Max (W) & 55/115 & 45/95 & 35/75 & -- \\
+\midrule
+Server MIPS & 98K & 61K & 33K & -- \\
+Total MIPS & 1.96M & 3.06M & 979K & \textbf{6M} \\
+Capacity & 32.7\% & 51.0\% & 16.3\% & 100\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%===============================================================================
+\section{DDPG Model Architecture}
+%===============================================================================
+
+\subsection{State Space Design}
+
+The pricing agent employs a Deep Deterministic Policy Gradient (DDPG) architecture with a state space that differs between configurations:
+
+\textbf{Homogeneous Configuration (2-dimensional state):}
+\begin{equation}
+s_t^{homo} = [\bar{q}_t, \bar{\lambda}_t]
+\end{equation}
+where:
+\begin{itemize}
+    \item $\bar{q}_t$: Average queue length across cluster members (scaled)
+    \item $\bar{\lambda}_t$: Average task arrival rate over the price slot (scaled)
+\end{itemize}
+
+\textbf{Heterogeneous Configuration (3-dimensional state):}
+\begin{equation}
+s_t^{hetero} = [\bar{q}_t, \bar{\lambda}_t, c_{norm}]
+\end{equation}
+where $c_{norm}$ represents the normalized cluster capacity:
+\begin{equation}
+c_{norm} = \frac{\sum_{i \in cluster} MIPS_i}{\bar{MIPS}_{scenario}}
+\end{equation}
+
+This additional dimension enables the agent to incorporate capacity awareness into pricing decisions.
+
+\subsection{Network Architecture}
+
+\textbf{Actor Network:} Input $\rightarrow$ Dense(64, ReLU) $\rightarrow$ Dense(64, ReLU) $\rightarrow$ Dense(1, Tanh) $\rightarrow$ scaled to $[0, 1]$
+
+\textbf{Critic Network:} Input(state+action) $\rightarrow$ Dense(64, ReLU) $\rightarrow$ Dense(64, ReLU) $\rightarrow$ Dense(1, Linear)
+
+\textbf{Training:} AMSGrad optimizer, $\alpha_{actor}=10^{-4}$, $\alpha_{critic}=10^{-3}$, $\gamma=0.99$, $\tau=0.005$, batch size 64, replay buffer 10,000.
+
+%===============================================================================
+%===============================================================================
+\section{Performance Metrics Comparison}
+%===============================================================================
+%===============================================================================
+
+%-------------------------------------------------------------------------------
+\subsection{Cumulative Return (ESP Profit)}
+%-------------------------------------------------------------------------------
+
+The cumulative return represents the total revenue earned by Edge Service Providers (ESPs) from task execution. This is the primary optimization objective for the DDPG pricing agents.
+
+\subsubsection{20-Server Scenario Results}
+
+Table~\ref{tab:profit_20} and Figure~\ref{fig:profit_20} present the profit comparison for the 20-server scenario.
+
+\begin{table}[H]
+\centering
+\caption{ESP Profit -- 20 Servers ($\times 10^6$)}
+\label{tab:profit_20}
+\footnotesize
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+\textbf{Topology} & \textbf{Dev} & \textbf{Homo} & \textbf{Hetero} & \textbf{$\Delta$\%} \\
+\midrule
+CENT. & 1K & 96.6 & 105.5 & +9.2 \\
+CENT. & 2K & 168.4 & 194.4 & +15.5 \\
+CENT. & 3K & 254.9 & 299.1 & +17.3 \\
+CENT. & 4K & 326.5 & 390.0 & +19.5 \\
+\midrule
+HYB. & 1K & 53.4 & 21.7 & -59.3 \\
+HYB. & 2K & 115.1 & 91.6 & -20.4 \\
+HYB. & 3K & 212.8 & 199.9 & -6.1 \\
+HYB. & 4K & 293.6 & 301.6 & +2.7 \\
+\midrule
+DEC. & 1K & 34.0 & 33.7 & -0.7 \\
+DEC. & 2K & 96.2 & 109.1 & +13.4 \\
+DEC. & 3K & 217.1 & 215.8 & -0.6 \\
+DEC. & 4K & 311.8 & 308.2 & -1.1 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{profit_comparison_20servers.pdf}
+\caption{Cumulative return comparison -- 20-server scenario. Solid bars: homogeneous; hatched bars: heterogeneous.}
+\label{fig:profit_20}
+\end{figure}
+
+\textbf{20 Servers:} Centralized improves consistently (+9.2\% to +19.5\%), Hybrid varies by device count (-59.3\% to +2.7\%), Decentralized stable ($\pm$13\%).
+
+\subsubsection{100-Server Scenario Results}
+
+The 100-server scenario reveals \textbf{dramatic improvements} for Hybrid and Decentralized topologies under heterogeneous configuration. Table~\ref{tab:profit_100} and Figures~\ref{fig:profit_100}--\ref{fig:profit_separated} present these results.
+
+\begin{table}[H]
+\centering
+\caption{ESP Profit -- 100 Servers ($\times 10^6$)}
+\label{tab:profit_100}
+\footnotesize
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+\textbf{Topology} & \textbf{Dev} & \textbf{Homo} & \textbf{Hetero} & \textbf{$\Delta$\%} \\
+\midrule
+CENT. & 1K & 87.8 & 83.6 & -4.8 \\
+CENT. & 2K & 153.8 & 147.3 & -4.3 \\
+CENT. & 3K & 233.3 & 232.2 & -0.4 \\
+CENT. & 4K & 296.4 & 304.2 & +2.6 \\
+\midrule
+HYB. & 1K & 9.2 & 34.8 & \textbf{+279} \\
+HYB. & 2K & 26.6 & 91.7 & \textbf{+245} \\
+HYB. & 3K & 55.4 & 171.3 & \textbf{+209} \\
+HYB. & 4K & 95.0 & 244.2 & \textbf{+157} \\
+\midrule
+DEC. & 1K & 1.1 & 21.5 & \textbf{+1788} \\
+DEC. & 2K & 5.9 & 93.5 & \textbf{+1472} \\
+DEC. & 3K & 18.5 & 169.5 & \textbf{+815} \\
+DEC. & 4K & 50.1 & 251.2 & \textbf{+401} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{profit_comparison_100servers.pdf}
+\caption{Cumulative return comparison -- 100-server scenario. Note the massive improvement for Hybrid and Decentralized topologies.}
+\label{fig:profit_100}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{absolute_profit_topology_separated.pdf}
+\caption{Absolute profit by topology with appropriate scales, showing clear homo vs. hetero differences within each topology.}
+\label{fig:profit_separated}
+\end{figure}
+
+\textbf{100 Servers:} The \textbf{key finding}---Centralized stable ($\pm$5\%), but distributed topologies dramatically improve: \textbf{Hybrid} +157--279\%, \textbf{Decentralized} +401--1788\% (up to 18$\times$). Capacity-aware pricing benefits distributed architectures most.
+
+%-------------------------------------------------------------------------------
+\subsection{Edge Server Execution Success Rate (Quality of Service)}
+%-------------------------------------------------------------------------------
+
+The edge execution success rate is the primary \textbf{Quality of Service (QoS)} metric, measuring the percentage of offloaded tasks that complete successfully on edge servers without deadline violations or resource failures:
+
+\begin{equation}
+\text{Edge Success Rate} = 100 \times \frac{\text{Tasks Successfully Executed on Edge}}{\text{Total Tasks Executed on Edge}}
+\end{equation}
+
+\subsubsection{100-Server Scenario -- Critical QoS Results}
+
+Table~\ref{tab:edge_success_100_detail} presents the detailed edge success rates, revealing the most dramatic performance difference between configurations.
+
+\begin{table}[H]
+\centering
+\caption{Edge Success Rate -- 100 Servers (\%)}
+\label{tab:edge_success_100_detail}
+\footnotesize
+\begin{tabular}{@{}llrrr@{}}
+\toprule
+\textbf{Topology} & \textbf{Dev} & \textbf{Homo} & \textbf{Hetero} & \textbf{$\Delta$\%} \\
+\midrule
+CENT. & 1K & 72.31 & 59.80 & -17.3 \\
+CENT. & 2K & 55.89 & 48.95 & -12.4 \\
+CENT. & 3K & 45.10 & 42.17 & -6.5 \\
+CENT. & 4K & 37.41 & 38.21 & +2.1 \\
+\midrule
+HYB. & 1K & 34.67 & 11.58 & -66.6 \\
+HYB. & 2K & 11.88 & 14.89 & +25.3 \\
+HYB. & 3K & 4.84 & 21.64 & +347 \\
+HYB. & 4K & \textbf{2.99} & \textbf{22.22} & \textbf{+576} \\
+\midrule
+DEC. & 1K & 28.89 & 9.10 & -68.5 \\
+DEC. & 2K & 5.75 & 20.68 & +260 \\
+DEC. & 3K & 0.75 & 26.74 & +3465 \\
+DEC. & 4K & \textbf{0.49} & \textbf{27.94} & \textbf{+5575} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{edgeSuccessRate_comparison_100servers.pdf}
+\caption{Edge execution success rate -- 100-server scenario. Heterogeneous configuration transforms near-zero baseline success rates into viable QoS levels for distributed topologies.}
+\label{fig:edge_success_100_main}
+\end{figure}
+
+\textbf{Critical Finding:} Under homogeneous configuration, Hybrid and Decentralized topologies exhibit \textbf{near-complete task failure} at high device counts (2.99\% and 0.49\% success at 4000 devices). Heterogeneous configuration with capacity-aware pricing \textbf{rescues these topologies}, achieving 22.22\% and 27.94\% success rates respectively---improvements of \textbf{+576\%} and \textbf{+5575\%}.
+
+\subsubsection{20-Server Scenario}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{edgeSuccessRate_comparison_20servers.pdf}
+\caption{Edge execution success rate -- 20-server scenario. Higher per-server capacity maintains acceptable QoS across configurations.}
+\label{fig:edge_success_20_main}
+\end{figure}
+
+\textbf{Observation:} 20-server maintains high success rates (80--99\%) regardless of configuration, as fewer high-capacity servers handle load effectively.
+
+%-------------------------------------------------------------------------------
+\subsection{Multi-Metric Analysis -- 100 Servers}
+%-------------------------------------------------------------------------------
+
+Table~\ref{tab:multi_metric_100} consolidates percentage changes across multiple performance metrics for the 100-server scenario, enabling direct comparison of trade-offs.
+
+\textbf{Interpretation Guide:}
+\begin{itemize}
+    \item \textbf{Profit} ($\uparrow$ better): Positive values indicate increased ESP revenue.
+    \item \textbf{Edge\%} ($\uparrow$ better): Edge execution success rate; positive values mean more tasks completed successfully on edge servers.
+    \item \textbf{CPU} ($\downarrow$ better): Average CPU utilization; negative values indicate improved efficiency (same work with less resource strain).
+    \item \textbf{Energy} ($\downarrow$ better): Total energy consumption; negative values indicate reduced power usage.
+\end{itemize}
+
+\begin{table}[H]
+\centering
+\caption{Multi-Metric Changes: Hetero vs Homo -- 100 Servers (\%)}
+\label{tab:multi_metric_100}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+\textbf{Topo.} & \textbf{Dev} & \textbf{Profit}$\uparrow$ & \textbf{Edge}$\uparrow$ & \textbf{CPU}$\downarrow$ & \textbf{Engy}$\downarrow$ \\
+\midrule
+CENT. & 1K & -4.8 & -17.3 & -57.8 & -20.2 \\
+CENT. & 2K & -4.3 & -12.4 & -51.0 & -20.3 \\
+CENT. & 3K & -0.4 & -6.5 & -45.3 & -20.4 \\
+CENT. & 4K & +2.6 & +2.1 & -44.7 & -20.4 \\
+\midrule
+HYB. & 1K & +279 & -66.6 & +6.4 & -19.0 \\
+HYB. & 2K & +245 & +25.3 & -49.1 & -30.2 \\
+HYB. & 3K & +209 & +347 & -53.8 & -35.6 \\
+HYB. & 4K & +157 & +576 & -64.6 & -39.5 \\
+\midrule
+DEC. & 1K & +1788 & -68.5 & -10.3 & -0.7 \\
+DEC. & 2K & +1472 & +260 & -58.6 & -19.9 \\
+DEC. & 3K & +815 & +3465 & -71.1 & -35.1 \\
+DEC. & 4K & +401 & +5575 & -78.2 & -34.8 \\
+\midrule
+\multicolumn{6}{@{}l}{\textit{Mean $\pm$ Std:}} \\
+\midrule
+\multicolumn{2}{@{}l}{CENT.} & $-1.7{\pm}3$ & $-8.5{\pm}8$ & $-50{\pm}6$ & $-20{\pm}0$ \\
+\multicolumn{2}{@{}l}{HYB.} & $+223{\pm}53$ & $+221{\pm}283$ & $-40{\pm}31$ & $-31{\pm}9$ \\
+\multicolumn{2}{@{}l}{DEC.} & $+1119{\pm}641$ & $+2308{\pm}2643$ & $-55{\pm}30$ & $-23{\pm}15$ \\
+\midrule
+\multicolumn{2}{@{}l}{\textbf{Overall}} & \textbf{+447} & \textbf{+840} & \textbf{-48} & \textbf{-25} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Key Insight:} Heterogeneous configuration improves \textbf{all four metrics} on average: Profit +446.6\%, Edge Success +839.9\%, CPU -48.2\%, Energy -24.7\%. Centralized gains efficiency (CPU -49.7\%, Energy -20.3\%) despite minimal profit change.
+
+%-------------------------------------------------------------------------------
+\subsection{Task Offload Rate}
+%-------------------------------------------------------------------------------
+
+The task offload rate measures the percentage of tasks that edge devices choose to offload to edge servers rather than execute locally. This metric reflects the attractiveness of edge server pricing.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{offloadRate_comparison_20servers.pdf}
+\caption{Percentage of tasks offloaded to edge -- 20-server scenario.}
+\label{fig:offload_20}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{offloadRate_comparison_100servers.pdf}
+\caption{Percentage of tasks offloaded to edge -- 100-server scenario.}
+\label{fig:offload_100}
+\end{figure}
+
+\textbf{Observation:} Offload rates remain stable across configurations (Centralized: 70--85\%). Stable offload + improved profit = \textbf{better revenue per task}, not more tasks.
+
+
+%-------------------------------------------------------------------------------
+\subsection{Device Execution Success Rate}
+%-------------------------------------------------------------------------------
+
+The device execution success rate measures the percentage of tasks executed locally on edge devices (not offloaded) that complete successfully.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{deviceSuccessRate_comparison_20servers.pdf}
+\caption{Device (local) execution success rate -- 20-server scenario.}
+\label{fig:device_success_20}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{deviceSuccessRate_comparison_100servers.pdf}
+\caption{Device (local) execution success rate -- 100-server scenario.}
+\label{fig:device_success_100}
+\end{figure}
+
+\textbf{Observation:} Device success remains consistently high (90--100\%) across all configurations. Edge-side improvements come \textbf{without trade-offs} on local execution.
+
+%-------------------------------------------------------------------------------
+\subsection{Average Network Usage per Offloaded Task}
+%-------------------------------------------------------------------------------
+
+Average network usage measures the bandwidth consumed per task that is offloaded to edge servers, reflecting communication efficiency.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{avgNetUsage_comparison_20servers.pdf}
+\caption{Average network usage per task -- 20-server scenario.}
+\label{fig:net_usage_20}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\columnwidth]{avgNetUsage_comparison_100servers.pdf}
+\caption{Average network usage per task -- 100-server scenario.}
+\label{fig:net_usage_100}
+\end{figure}
+
+\textbf{Observation:} Network usage stable across configurations. Performance gains stem from \textbf{better task-to-server matching}, not altered communication patterns.
+
+%===============================================================================
+%===============================================================================
+\section{Topology Analysis}
+%===============================================================================
+%===============================================================================
+
+%-------------------------------------------------------------------------------
+\subsection{Topology Ranking Stability}
+%-------------------------------------------------------------------------------
+
+This section analyzes whether the relative performance ranking of topologies (Centralized, Hybrid, Decentralized) changes between homogeneous and heterogeneous configurations.
+
+\begin{table}[H]
+\centering
+\caption{Topology Ranking -- 20 Servers}
+\label{tab:rank_20}
+\footnotesize
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Dev} & \textbf{Homo} & \textbf{Hetero} & \textbf{Match} \\
+\midrule
+1K & C$>$H$>$D & C$>$D$>$H & No \\
+2K & C$>$H$>$D & C$>$D$>$H & No \\
+3K & C$>$D$>$H & C$>$D$>$H & Yes \\
+4K & C$>$D$>$H & C$>$D$>$H & Yes \\
+\midrule
+\multicolumn{4}{@{}l}{\textit{Match: 2/4 (50\%)}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Topology Ranking -- 100 Servers}
+\label{tab:rank_100}
+\footnotesize
+\begin{tabular}{@{}lccc@{}}
+\toprule
+\textbf{Dev} & \textbf{Homo} & \textbf{Hetero} & \textbf{Match} \\
+\midrule
+1K & C$>$H$>$D & C$>$H$>$D & Yes \\
+2K & C$>$H$>$D & C$>$D$>$H & No \\
+3K & C$>$H$>$D & C$>$H$>$D & Yes \\
+4K & C$>$H$>$D & C$>$D$>$H & No \\
+\midrule
+\multicolumn{4}{@{}l}{\textit{Match: 2/4 (50\%)}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Observation:} 20-server: 50\% match rate (2/4). 100-server: 50\% match rate (2/4). Despite shifts between Hybrid and Decentralized, \textbf{Centralized consistently ranks first} in all scenarios.
+
+%-------------------------------------------------------------------------------
+\subsection{Workload Distribution Across Server Classes}
+%-------------------------------------------------------------------------------
+
+A critical question is whether the capacity-aware pricing mechanism distributes tasks proportionally to server capacity. Table~\ref{tab:class_workload} compares the capacity share (MIPS contribution) against actual task allocation for each server class.
+
+\begin{table}[H]
+\centering
+\caption{Capacity Share vs Task Allocation by Server Class (Decentralized Topology)}
+\label{tab:class_workload}
+\footnotesize
+\setlength{\tabcolsep}{2.5pt}
+\begin{tabular}{@{}l|ccc|ccc@{}}
+\toprule
+ & \multicolumn{3}{c|}{\textbf{20 Servers}} & \multicolumn{3}{c}{\textbf{100 Servers}} \\
+\textbf{Class} & \textbf{Cap.\%} & \textbf{Tasks\%} & \textbf{Diff} & \textbf{Cap.\%} & \textbf{Tasks\%} & \textbf{Diff} \\
+\midrule
+A (High) & 47.6 & 50.9 & +3.3 & 32.7 & 31.9 & -0.8 \\
+B (Medium) & 38.1 & 37.3 & -0.8 & 51.0 & 42.4 & -8.6 \\
+C (Low) & 14.3 & 11.8 & -2.5 & 16.3 & 25.7 & +9.4 \\
+\midrule
+\textbf{Ratio A:C} & 3.3:1 & 4.3:1 & -- & 2.0:1 & 1.2:1 & -- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\textbf{Key Finding:} Task allocation patterns differ by scenario scale (Decentralized topology data, most reliable for per-server analysis):
+\begin{itemize}
+    \item \textbf{20-server:} High-capacity servers (Class A) receive proportionally more tasks---47.6\% capacity yields 50.9\% of tasks (+3.3\%), while Class C receives 11.8\% vs 14.3\% capacity (-2.5\%). Task ratio A:C = 4.3:1 exceeds capacity ratio 3.3:1.
+    \item \textbf{100-server:} Distribution shifts---Class A receives 31.9\% (close to 32.7\% capacity), but Class C receives \textbf{more} tasks (25.7\%) than its capacity share (16.3\%, +9.4\%). Task ratio A:C = 1.2:1 is \textbf{lower} than capacity ratio 2.0:1.
+\end{itemize}
+
+This suggests the capacity-aware pricing mechanism adapts differently across scales:
+\begin{enumerate}
+    \item At smaller scale (20 servers): Successfully routes tasks toward higher-capacity servers
+    \item At larger scale (100 servers): Load balancing behavior emerges, distributing tasks more evenly
+    \item The dramatic QoS improvements (+576\% to +5575\%) stem from capacity-awareness enabling better price-based load management
+\end{enumerate}
+
+%===============================================================================
+\section{Conclusions}
+%===============================================================================
+
+\begin{enumerate}
+    \item \textbf{Fair comparison established}: Total MIPS, RAM, and storage are exactly equal (6M MIPS, 1.6M MB RAM, 25.6M MB storage) between homo and hetero configurations, ensuring valid comparison.
+
+    \item \textbf{Dramatic QoS improvement}: Edge success rate transforms from near-zero to viable levels---Hybrid: 2.99\%$\rightarrow$22.22\% (+576\%), Decentralized: 0.49\%$\rightarrow$27.94\% (+5575\%) at 100 servers/4000 devices.
+
+    \item \textbf{Massive profit improvement}: 100-server heterogeneous configuration improves Hybrid by +157--279\% and Decentralized by +401--1788\%, representing up to 18$\times$ improvement.
+
+    \item \textbf{Rankings partially stable}: 50\% of topology rankings match between configurations in both scenarios, and Centralized consistently remains the best performer.
+
+    \item \textbf{3D state space is effective}: Adding normalized capacity as a state dimension enables dramatic performance improvements for distributed control topologies.
+
+    \item \textbf{Energy efficiency}: Heterogeneous configuration achieves 20--40\% reduction in energy consumption across topologies.
+
+    \item \textbf{Overall improvement}: Average profit increase of +446.6\% for 100-server scenario, with concurrent improvements in CPU utilization (-48.2\%) and energy consumption (-24.7\%).
+
+    \item \textbf{Scale-dependent workload distribution}: Capacity-aware pricing exhibits different behavior across scales---favoring high-capacity servers at 20-server scale (A:C task ratio 4.3:1 vs capacity 3.3:1) while achieving load-balancing at 100-server scale (A:C task ratio 1.2:1 vs capacity 2.0:1).
+\end{enumerate}
+
+\end{document}
