@@ -139,27 +139,6 @@ public class Simulation extends SimulationAbstract {
 			// If any of the input files is not correct stop everything.
 			return;
 
-		// Override orchestration algorithm from CLI if provided, ignoring the
-		// properties file
-		if (com.github.hennas.eisim.EisimSimulationParameters.topology != null) {
-			switch (com.github.hennas.eisim.EisimSimulationParameters.topology) {
-				case "C":
-					SimulationParameters.orchestrationAlgorithms = new String[] { "CENTRALIZED" };
-					break;
-				case "H":
-					SimulationParameters.orchestrationAlgorithms = new String[] { "HYBRID" };
-					break;
-				case "D":
-					SimulationParameters.orchestrationAlgorithms = new String[] { "DECENTRALIZED" };
-					break;
-				default:
-					SimLog.println("WARNING: Unknown topology '%s'. Keeping properties file algorithm.",
-							com.github.hennas.eisim.EisimSimulationParameters.topology);
-			}
-			SimLog.println("Simulation dynamically overriding topology algorithm to: %s",
-					SimulationParameters.orchestrationAlgorithms[0]);
-		}
-
 		// Save the simulation starting time.
 		Date startTime = Calendar.getInstance().getTime();
 
@@ -180,8 +159,7 @@ public class Simulation extends SimulationAbstract {
 		// Then, print the simulation duration
 		SimLog.println("%s - Simulation took : %s", getClass().getSimpleName(),
 				simulatioDuration(startTime, finishTime));
-		SimLog.println("%s - results were saved to the folder: %s", getClass().getSimpleName(),
-				SimulationParameters.outputFolder);
+		SimLog.println("%s - results were saved to the folder: %s", getClass().getSimpleName(), SimulationParameters.outputFolder);
 
 	}
 
